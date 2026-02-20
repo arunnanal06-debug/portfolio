@@ -6,103 +6,103 @@
 <title>Arunkumar V | Portfolio</title>
 
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
 
-    body {
-        background: #f4f6f9;
-        color: #1e293b;
-        line-height: 1.6;
-        overflow-x: hidden;
-    }
+body{
+    background:#f4f6f9;
+    color:#1e293b;
+    line-height:1.6;
+    overflow-x:hidden;
+}
 
-    /* Scroll Animation Background */
-    #scroll-animation {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: -1;
-        pointer-events: none;
-        opacity: 0.12;
-        object-fit: cover;
-    }
+/* Canvas Background Animation */
+#animationCanvas{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index:-1;
+    opacity:0.12; /* watermark transparency */
+    pointer-events:none;
+}
 
-    header {
-        background: linear-gradient(135deg, #0f172a, #1e3a8a);
-        color: white;
-        padding: 40px 20px;
-        text-align: center;
-    }
+/* Header */
+header{
+    background:linear-gradient(135deg,#0f172a,#1e3a8a);
+    color:white;
+    padding:40px 20px;
+    text-align:center;
+}
 
-    header h1 {
-        font-size: 2.8rem;
-        margin-bottom: 10px;
-    }
+header h1{
+    font-size:2.8rem;
+    margin-bottom:10px;
+}
 
-    header p {
-        font-size: 1.2rem;
-        opacity: 0.9;
-    }
+header p{
+    font-size:1.2rem;
+    opacity:0.9;
+}
 
-    .container {
-        max-width: 1000px;
-        margin: 40px auto;
-        padding: 20px;
-    }
+.container{
+    max-width:1000px;
+    margin:40px auto;
+    padding:20px;
+}
 
-    .card {
-        background: white;
-        border-radius: 16px;
-        padding: 25px;
-        margin-bottom: 25px;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-        transition: transform 0.3s ease;
-    }
+.card{
+    background:white;
+    border-radius:16px;
+    padding:25px;
+    margin-bottom:25px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.08);
+    transition:transform 0.3s ease;
+}
 
-    .card:hover {
-        transform: translateY(-5px);
-    }
+.card:hover{
+    transform:translateY(-5px);
+}
 
-    h2 {
-        color: #1e3a8a;
-        margin-bottom: 15px;
-        border-left: 5px solid #1e3a8a;
-        padding-left: 10px;
-    }
+h2{
+    color:#1e3a8a;
+    margin-bottom:15px;
+    border-left:5px solid #1e3a8a;
+    padding-left:10px;
+}
 
-    ul {
-        padding-left: 20px;
-    }
+ul{
+    padding-left:20px;
+}
 
-    li {
-        margin-bottom: 8px;
-    }
+li{
+    margin-bottom:8px;
+}
 
-    .contact a {
-        text-decoration: none;
-        color: #1e3a8a;
-        font-weight: 600;
-    }
+.contact a{
+    text-decoration:none;
+    color:#1e3a8a;
+    font-weight:600;
+}
 
-    footer {
-        text-align: center;
-        padding: 20px;
-        color: #64748b;
-        font-size: 0.9rem;
-    }
+footer{
+    text-align:center;
+    padding:20px;
+    color:#64748b;
+    font-size:0.9rem;
+}
 </style>
 </head>
 
 <body>
 
-<!-- Scroll Animation Background -->
-<img id="scroll-animation" src="frames/ezgif-frame-001.jpg" alt="animation" />
+<!-- Canvas for smooth frame animation -->
+<canvas id="animationCanvas"></canvas>
 
 <header>
     <h1>Arunkumar V</h1>
@@ -172,26 +172,62 @@
 </footer>
 
 <script>
-    const frameCount = 240;
-    const animation = document.getElementById("scroll-animation");
+const frameCount = 240;
+const canvas = document.getElementById("animationCanvas");
+const context = canvas.getContext("2d");
 
-    function pad(num) {
-        return num.toString().padStart(3, '0');
-    }
+let images = [];
+let loadedImages = 0;
 
-    function updateFrame() {
-        const scrollTop = window.scrollY;
-        const maxScroll = document.body.scrollHeight - window.innerHeight;
-        const scrollFraction = scrollTop / maxScroll;
-        const frameIndex = Math.min(
-            frameCount - 1,
-            Math.floor(scrollFraction * frameCount)
-        );
-        const frameSrc = `frames/ezgif-frame-${pad(frameIndex + 1)}.jpg`;
-        animation.src = frameSrc;
-    }
+// Resize canvas to full screen
+function resizeCanvas(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
 
-    window.addEventListener("scroll", updateFrame);
+// Preload all frames
+for(let i = 1; i <= frameCount; i++){
+    const img = new Image();
+    img.src = `frames/ezgif-frame-${String(i).padStart(3, '0')}.jpg`;
+    img.onload = () => {
+        loadedImages++;
+        if(loadedImages === frameCount){
+            drawFrame(0);
+        }
+    };
+    images.push(img);
+}
+
+// Draw frame on canvas
+function drawFrame(index){
+    if(!images[index]) return;
+    context.clearRect(0, 0, canvas.width, canvas.height);
+
+    const img = images[index];
+    const scale = Math.max(
+        canvas.width / img.width,
+        canvas.height / img.height
+    );
+
+    const x = (canvas.width / 2) - (img.width / 2) * scale;
+    const y = (canvas.height / 2) - (img.height / 2) * scale;
+
+    context.drawImage(img, x, y, img.width * scale, img.height * scale);
+}
+
+// Scroll control
+window.addEventListener("scroll", () => {
+    const scrollTop = window.scrollY;
+    const maxScroll = document.body.scrollHeight - window.innerHeight;
+    const scrollFraction = scrollTop / maxScroll;
+    const frameIndex = Math.min(
+        frameCount - 1,
+        Math.floor(scrollFraction * frameCount)
+    );
+    drawFrame(frameIndex);
+});
 </script>
 
 </body>
