@@ -14,13 +14,13 @@
 }
 
 body{
-    background:#f4f6f9;
-    color:#1e293b;
+    background:#0b0f19;
+    color:#ffffff;
     line-height:1.6;
     overflow-x:hidden;
 }
 
-/* Canvas Background Animation */
+/* Canvas Animation Background */
 #animationCanvas{
     position:fixed;
     top:0;
@@ -28,21 +28,21 @@ body{
     width:100%;
     height:100%;
     z-index:-1;
-    opacity:0.12; /* watermark transparency */
+    opacity:0.25; /* make animation clearly visible */
     pointer-events:none;
 }
 
-/* Header */
+/* Transparent Header */
 header{
-    background:linear-gradient(135deg,#0f172a,#1e3a8a);
-    color:white;
-    padding:40px 20px;
+    padding:60px 20px 30px;
     text-align:center;
+    background:transparent;
 }
 
 header h1{
-    font-size:2.8rem;
-    margin-bottom:10px;
+    font-size:3rem;
+    letter-spacing:1px;
+    text-shadow:0 0 15px rgba(255,255,255,0.3);
 }
 
 header p{
@@ -50,30 +50,36 @@ header p{
     opacity:0.9;
 }
 
+/* Container */
 .container{
     max-width:1000px;
-    margin:40px auto;
+    margin:30px auto;
     padding:20px;
 }
 
+/* Glass Transparent Cards */
 .card{
-    background:white;
-    border-radius:16px;
+    background:rgba(255,255,255,0.08);
+    border-radius:18px;
     padding:25px;
     margin-bottom:25px;
-    box-shadow:0 8px 24px rgba(0,0,0,0.08);
-    transition:transform 0.3s ease;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border:1px solid rgba(255,255,255,0.15);
+    box-shadow:0 8px 32px rgba(0,0,0,0.25);
+    transition:all 0.3s ease;
 }
 
 .card:hover{
-    transform:translateY(-5px);
+    transform:translateY(-6px) scale(1.01);
+    background:rgba(255,255,255,0.12);
 }
 
 h2{
-    color:#1e3a8a;
     margin-bottom:15px;
-    border-left:5px solid #1e3a8a;
-    padding-left:10px;
+    font-size:1.6rem;
+    border-left:4px solid #38bdf8;
+    padding-left:12px;
 }
 
 ul{
@@ -86,14 +92,14 @@ li{
 
 .contact a{
     text-decoration:none;
-    color:#1e3a8a;
+    color:#38bdf8;
     font-weight:600;
 }
 
 footer{
     text-align:center;
-    padding:20px;
-    color:#64748b;
+    padding:25px;
+    color:#cbd5f5;
     font-size:0.9rem;
 }
 </style>
@@ -101,7 +107,6 @@ footer{
 
 <body>
 
-<!-- Canvas for smooth frame animation -->
 <canvas id="animationCanvas"></canvas>
 
 <header>
@@ -177,9 +182,8 @@ const canvas = document.getElementById("animationCanvas");
 const context = canvas.getContext("2d");
 
 let images = [];
-let loadedImages = 0;
+let loaded = 0;
 
-// Resize canvas to full screen
 function resizeCanvas(){
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -187,46 +191,42 @@ function resizeCanvas(){
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
-// Preload all frames
-for(let i = 1; i <= frameCount; i++){
+// preload frames
+for(let i=1;i<=frameCount;i++){
     const img = new Image();
-    img.src = `frames/ezgif-frame-${String(i).padStart(3, '0')}.jpg`;
+    img.src = `frames/ezgif-frame-${String(i).padStart(3,'0')}.jpg`;
     img.onload = () => {
-        loadedImages++;
-        if(loadedImages === frameCount){
+        loaded++;
+        if(loaded === frameCount){
             drawFrame(0);
         }
     };
     images.push(img);
 }
 
-// Draw frame on canvas
 function drawFrame(index){
-    if(!images[index]) return;
-    context.clearRect(0, 0, canvas.width, canvas.height);
-
     const img = images[index];
+    if(!img) return;
+
+    context.clearRect(0,0,canvas.width,canvas.height);
+
     const scale = Math.max(
         canvas.width / img.width,
         canvas.height / img.height
     );
 
-    const x = (canvas.width / 2) - (img.width / 2) * scale;
-    const y = (canvas.height / 2) - (img.height / 2) * scale;
+    const x = (canvas.width/2) - (img.width/2)*scale;
+    const y = (canvas.height/2) - (img.height/2)*scale;
 
-    context.drawImage(img, x, y, img.width * scale, img.height * scale);
+    context.drawImage(img, x, y, img.width*scale, img.height*scale);
 }
 
-// Scroll control
-window.addEventListener("scroll", () => {
+window.addEventListener("scroll", ()=>{
     const scrollTop = window.scrollY;
     const maxScroll = document.body.scrollHeight - window.innerHeight;
-    const scrollFraction = scrollTop / maxScroll;
-    const frameIndex = Math.min(
-        frameCount - 1,
-        Math.floor(scrollFraction * frameCount)
-    );
-    drawFrame(frameIndex);
+    const fraction = scrollTop / maxScroll;
+    const index = Math.min(frameCount-1, Math.floor(fraction * frameCount));
+    drawFrame(index);
 });
 </script>
 
